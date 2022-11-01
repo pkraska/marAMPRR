@@ -5,19 +5,15 @@
 \alias{ampDataLoad}
 \title{Data Wrangling for Aquaculture Monitoring Program}
 \usage{
-ampDataLoad(
-  file,
-  excelSheets = c("si", "m", "s", "gs", "dpab"),
-  facilityNum = FALSE
-)
+ampDataLoad(file, excelSheets = c("si", "m", "s", "gs", "dpab"))
 }
 \arguments{
 \item{excelSheets}{the sheet name from the excel spreadsheet of data}
 
+\item{x}{AMP data file for a specific region and year}
+
 \item{facilityNum}{the facilityNumberInProject from the spreadsheet for the
 facility you are interested in}
-
-\item{x}{AMP data file for a specific region and year}
 }
 \value{
 a list for each aquaculture facility, as well as a `combined` list of
