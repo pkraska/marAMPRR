@@ -63,9 +63,9 @@ ampMapSetup <-
           sf::st_transform(crs = 32620)
       }
     }
-    if (!is.na(province)){
+    if (is.character(province)){
       coastline <- coastline %>%
-        filter(PREABBR == province)
+        filter(PREABBR %in% province)
     }
     return(coastline)
   }
