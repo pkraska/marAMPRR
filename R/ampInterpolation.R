@@ -18,10 +18,6 @@
 #' @examples ampInterpolation()
 ampInterpolation <- function(data, z, cellsize, crs = 32620) {
 
-  data <- data2021[['m']] %>%
-    filter(grepl(x = sampleCode, pattern = "F04"),
-           metal == "Cadmium")
-
   plot_grid <- data %>%
     sf::st_bbox() %>%
     sf::st_as_sfc() %>%
