@@ -2,6 +2,7 @@
 
 export(ampBasemap)
 export(ampDataLoad)
+export(ampInterpolation)
 export(ampMapSetup)
 import(cowplot)
 import(dplyr)

@@ -6,7 +6,14 @@
 \alias{ampDataLoad}
 \title{AMP Basemap creation for use in plotting}
 \usage{
-ampBasemap(data, coastline, aoi_buffer = 1000)
+ampBasemap(
+  data,
+  coastline,
+  aoi_buffer = 1000,
+  insetMap = FALSE,
+  facility = NA,
+  cageExtents = FALSE
+)
 
 ampDataLoad(file, excelSheets = c("si", "m", "s", "gs", "dpab"))
 }
