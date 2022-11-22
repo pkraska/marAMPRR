@@ -1,6 +1,6 @@
 #' AMP Bathymetric interpolation
 #'
-#' @param data sf dataframe of data with coordinates variables included
+#' @param dataframe sf dataframe of data with coordinates variables included
 #' @param x longitude
 #' @param y latitude
 #' @param z parameter column name to be interpolated
@@ -16,9 +16,8 @@
 #' @export
 #'
 #' @examples ampInterpolation()
-ampInterpolation <- function(data, z, cellsize, crs = 32620) {
-
-  plot_grid <- data %>%
+ampInterpolation <- function(dataframe, z, cellsize, contour_interval = 10, crs = 32620) {
+  plot_grid <- df %>%
     sf::st_bbox() %>%
     sf::st_as_sfc() %>%
     sf::st_transform(crs) %>%
@@ -31,35 +30,23 @@ ampInterpolation <- function(data, z, cellsize, crs = 32620) {
   sp_grid <- as(sp_grid, "SpatialPixels")
 
   try(UK <-
-        automap::autoKrige(formula = z ~ coords.x1 + coords.x2,
-                           as(data, "Spatial"),
+        automap::autoKrige(formula = eval(parse(text = z)) ~ coords.x1 + coords.x2,
+                           as(df, "Spatial"),
                            sp_grid))
 
   plot(UK)
 
   krige_data <-
-    cbind(UK$krige_output@data, UK$krige_output@coords)
-  colnames(krige_data) <- c('Z', 'var', 'stdev', 'X', 'Y')
+    cbind(UK$krige_output@data, UK$krige_output@coords) %>%
+    `colnames<-`(c('Z', 'var', 'stdev', 'X', 'Y')) %>%
+    sf::st_as_sf(coords = c("X", "Y"), crs = crs, remove = FALSE)
 
-  krige_data <-
-    sf::st_as_sf(krige_data, coords = c("X", "Y"), crs = 32620) %>%
-    stars::st_rasterize()
+  krige_raster <-
+    stars::st_rasterize(krige_data)
 
-  # krige_df <-
-  #   akima::interp(
-  #     x = sf::st_coordinates(krige_data)[, 1],
-  #     y = sf::st_coordinates(krige_data)[, 2],
-  #     z = as.vector(krige_data$Z)
-  #   )
-  #
-  # krige_contour <- data.frame(
-  #   x = rep(krige_df$x, ncol(krige_df$z)),
-  #   y = rep(krige_df$y, each = nrow(krige_df$z)),
-  #   z = as.numeric(krige_df$z)
-  # )
+  ggplot2::ggplot() +
+    stars::geom_stars(data = krige_raster) +
+    ggplot2::geom_contour(data = krige_data, aes(x = X, y = Y, z = Z), bins = contour_interval, inherit.aes = FALSE) +
+    ggplot2::coord_equal()
 
-ggplot2::ggplot() +
-  stars::geom_stars(data = krige_data) +
-  ggplot2::geom_contour(data = krige_contour, aes(x, y, z = z), bins = 20, inherit.aes = FALSE) +
-  ggplot2::coord_equal()
-    }
+}
