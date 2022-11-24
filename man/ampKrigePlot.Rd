@@ -7,14 +7,35 @@
 ampKrigePlot(
   krigedData,
   contour = TRUE,
-  contour_interval = 10,
+  contour_bins = 10,
   crs = 32620,
-  colourTheme = "plasma"
+  colourTheme = "plasma",
+  raster = TRUE
 )
 }
 \arguments{
-\item{contour}{}
+\item{krigedData}{a dataframe of Universal Kriged data from the `ampKrige`
+function}
+
+\item{contour}{boolean option, if `TRUE`, will plot contour lines}
+
+\item{contour_bins}{integer value of the number of contour lines bins to use}
+
+\item{crs}{the EPSG code for the coordinate reference system you would like
+to use, default is 32620}
+
+\item{colourTheme}{character string of the name of the ggplot2 viridis colour
+themes. options are "magma", "plasma", and "volcano"}
+
+\item{raster}{boolean option to use `stars` raster if TRUE (faster), or to
+convert the raster to an sf polygon if FALSE (slower)}
+}
+\value{
+a gpplot2 plot of the kriged values supplied
 }
 \description{
 Title
+}
+\examples{
+ampKrigePlot()
 }
