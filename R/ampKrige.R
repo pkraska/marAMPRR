@@ -10,7 +10,6 @@
 #' @import sf
 #' @import ggplot2
 #' @import stars
-#' @name %>%
 #'
 #' @return dataframe of kriged valuess
 #' @export

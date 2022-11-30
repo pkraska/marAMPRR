@@ -8,7 +8,6 @@
 #'   all of the data
 #' @import dplyr
 #' @import readxl
-#' @name %>%
 #' @import tidyr
 #' @import sf
 #'
@@ -33,7 +32,9 @@ ampDataLoad <-
         dplyr::mutate(sampleCode = as.character(sampleCode))
     }
     data[['si']] <- raw[['si']] %>%
-      dplyr::filter(!is.na(sampleCode)) %>%
+      dplyr::filter(!is.na(sampleCode),
+                    !is.na(longitude),
+                    !is.na(latitude)) %>%
       sf::st_as_sf(
         coords = c('longitude', 'latitude'),
         crs = 4326,
@@ -105,6 +106,7 @@ ampDataLoad <-
         dplyr::select(sampleCode = sampleCode.x,
                       latitude,
                       longitude,
+                      depth = depthPoreWaterExtractionCM,
                       wavelength,
                       concentration)
     }

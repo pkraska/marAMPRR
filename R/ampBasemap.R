@@ -9,7 +9,6 @@
 #' @import ggplot2
 #' @import rnaturalearth
 #' @import cowplot
-#' @name %>%
 #'
 #'
 #' @return ggplot2 plot of sf objects
