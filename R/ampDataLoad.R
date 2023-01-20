@@ -82,33 +82,41 @@ ampDataLoad <-
     # Sulfides data transformation
     if ("s" %in% excelSheets) {
       print("SULFIDES")
-      data[['s']] <- data[['si']] %>%
-        sf::st_join(data[['s']], by = 'sampleCode') %>%
-        tidyr::pivot_longer(
-          cols = starts_with("UV1sulphideUM"),
-          names_to = "wavelength",
-          values_to = "concentration"
+
+      test <- data[['s']] %>%
+        sf::st_drop_geometry() %>%
+        select(
+          sampleCode,
+          conc_ise = ISEsulphideUM,
+          conc_mb_1 = mBlueSulphideUM_1cm,
+          conc_mb_2 = mBlueSulphideUM_2cm,
+          conc_uv_1 = sulphideUV1CM,
+          conc_uv_2 = sulphideUV2CM,
+          conc_ise = ISEsulphideUM
         ) %>%
-        dplyr::filter(!is.na(concentration)) %>%
-        dplyr::mutate(
-          concentration = suppressWarnings(as.numeric(concentration)),
-          wavelength = stringr::str_replace(
-            string = wavelength,
-            pattern = "UV1sulphideUM",
-            replacement = ""
-          ),
-          wavelength = stringr::str_replace(
-            string = wavelength,
-            pattern = "NM",
-            replacement = "nm"
-          )
+        mutate(
+          conc_uv_1 = as.character(conc_uv_1),
+          conc_uv_2 = as.character(conc_uv_2),
+          conc_ise = case_when(conc_ise == "<LOQ" ~ "-999",
+                               TRUE ~ conc_ise),
+          conc_mb_1 = case_when(conc_mb_1 == "<LOQ" ~ "-999",
+                                TRUE ~ conc_mb_1),
+          conc_mb_2 = case_when(conc_mb_2 == "<LOQ" ~ "-999",
+                                TRUE ~ conc_mb_2),
+          conc_uv_1 = case_when(conc_uv_1 == "<LOQ" ~ "-999",
+                                TRUE ~ conc_uv_1),
+          conc_uv_2 = case_when(conc_uv_2 == "<LOQ" ~ "-999",
+                                TRUE ~ conc_uv_2)
         ) %>%
-        dplyr::select(sampleCode = sampleCode.x,
-                      latitude,
-                      longitude,
-                      depth = depthPoreWaterExtractionCM,
-                      wavelength,
-                      concentration)
+        pivot_longer(cols = -sampleCode,names_to = "method", values_to = "conc") %>%
+        mutate(depth = case_when(method == "conc_ise" ~ 1,
+                                 grepl(pattern = "_1", x = method) ~ 1,
+                                 grepl(pattern = "_2", x = method) ~ 2,
+                                 TRUE ~ NA_real_),
+               method = case_when(grepl("ise", method) ~ "ISE",
+                                  grepl("mb", method) ~  "MB",
+                                  grepl("uv", method)~ "UV"),
+               conc = as.numeric(conc))
     }
 
     # DPAB data transformation
