@@ -28,7 +28,7 @@ ampMapSetup <-
           temp
         )
 
-        unzip(temp, exdir = "data/input/coastline")
+        unzip(temp, exdir = path)
 
         coastline <-
           sf::st_read(dsn = paste0(path, "lpr_000b16a_e.shp")) %>%

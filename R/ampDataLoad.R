@@ -57,6 +57,7 @@ ampDataLoad <-
     if ("m" %in% excelSheets) {
       print("METALS")
       data[['m']] <- data[['si']] %>%
+        select(sampleCode) %>%
         sf::st_join(data[['m']], by = 'sampleCode') %>%
         tidyr::pivot_longer(
           cols = ends_with("PerKg"),
@@ -73,8 +74,6 @@ ampDataLoad <-
           )
         ) %>%
         dplyr::select(sampleCode = sampleCode.x,
-                      latitude,
-                      longitude,
                       metal,
                       concentration)
     }
@@ -82,10 +81,9 @@ ampDataLoad <-
     # Sulfides data transformation
     if ("s" %in% excelSheets) {
       print("SULFIDES")
-
-      test <- data[['s']] %>%
+      data[['s']] <- data[['s']] %>%
         sf::st_drop_geometry() %>%
-        select(
+        dplyr::select(
           sampleCode,
           conc_ise = ISEsulphideUM,
           conc_mb_1 = mBlueSulphideUM_1cm,
@@ -94,7 +92,7 @@ ampDataLoad <-
           conc_uv_2 = sulphideUV2CM,
           conc_ise = ISEsulphideUM
         ) %>%
-        mutate(
+        dplyr::mutate(
           conc_uv_1 = as.character(conc_uv_1),
           conc_uv_2 = as.character(conc_uv_2),
           conc_ise = case_when(conc_ise == "<LOQ" ~ "-999",
@@ -108,15 +106,18 @@ ampDataLoad <-
           conc_uv_2 = case_when(conc_uv_2 == "<LOQ" ~ "-999",
                                 TRUE ~ conc_uv_2)
         ) %>%
-        pivot_longer(cols = -sampleCode,names_to = "method", values_to = "conc") %>%
-        mutate(depth = case_when(method == "conc_ise" ~ 1,
+        tidyr::pivot_longer(cols = -sampleCode,names_to = "method", values_to = "conc") %>%
+        dplyr::mutate(depth = case_when(method == "conc_ise" ~ 1,
                                  grepl(pattern = "_1", x = method) ~ 1,
                                  grepl(pattern = "_2", x = method) ~ 2,
                                  TRUE ~ NA_real_),
                method = case_when(grepl("ise", method) ~ "ISE",
                                   grepl("mb", method) ~  "MB",
                                   grepl("uv", method)~ "UV"),
-               conc = as.numeric(conc))
+               conc = as.numeric(conc)) %>%
+        select(sampleCode, method, depth, conc) %>%
+        dplyr::left_join(select(data[['si']], sampleCode, latitude, longitude), by = "sampleCode") %>%
+        sf::st_as_sf(coords = c("longitude", "latitude"), crs = "WRS84")
     }
 
     # DPAB data transformation
