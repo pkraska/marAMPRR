@@ -8,9 +8,11 @@ ampBasemap(
   data,
   coastline,
   aoi_buffer = 1000,
-  insetMap = FALSE,
   facility = NA,
-  cageExtents = FALSE
+  analysis = FALSE,
+  cageExtents = FALSE,
+  leases = FALSE,
+  sampleLocations = FALSE
 )
 }
 \arguments{
