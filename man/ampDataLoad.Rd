@@ -4,7 +4,7 @@
 \alias{ampDataLoad}
 \title{Data Wrangling for Aquaculture Monitoring Program}
 \usage{
-ampDataLoad(file, excelSheets = c("si", "m", "s", "gs", "dpab"))
+ampDataLoad(file, excelSheets = c("si", "m", "s", "gs", "dpab", "om"))
 }
 \arguments{
 \item{excelSheets}{the sheet name from the excel spreadsheet of data}

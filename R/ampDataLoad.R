@@ -19,7 +19,7 @@
 
 ampDataLoad <-
   function(file,
-           excelSheets = c("si", "m", "s", "gs", "dpab")) {
+           excelSheets = c("si", "m", "s", "gs", "dpab", "om")) {
     # Create single list for all data of interest
     raw <- list()
     data <- list()
@@ -58,13 +58,20 @@ ampDataLoad <-
       print("METALS")
       data[['m']] <- data[['si']] %>%
         select(sampleCode) %>%
-        sf::st_join(data[['m']], by = 'sampleCode') %>%
+        sf::st_join(data[['m']], by = 'sampleCode')
+
+      for (i in colnames(data[['m']])[!colnames(data[['m']]) %in% c("sampleCode", "geometry")]) {
+        data[['m']][[i]] <- as.character(data[['m']][[i]])
+      }
+
+      data[['m']] <- data[['m']] %>%
         tidyr::pivot_longer(
           cols = ends_with("PerKg"),
           names_to = "metal",
           values_to = "concentration"
         ) %>%
-        dplyr::filter(!is.na(concentration)) %>%
+        # Need to decide if we should remove NA/<LOQ values at this point
+        # dplyr::filter(!is.na(concentration)) %>%
         dplyr::mutate(
           concentration = suppressWarnings(as.numeric(concentration)),
           metal = stringr::str_replace(
@@ -106,23 +113,48 @@ ampDataLoad <-
           conc_uv_2 = case_when(conc_uv_2 == "<LOQ" ~ "-999",
                                 TRUE ~ conc_uv_2)
         ) %>%
-        tidyr::pivot_longer(cols = -sampleCode,names_to = "method", values_to = "conc") %>%
-        dplyr::mutate(depth = case_when(method == "conc_ise" ~ 1,
-                                 grepl(pattern = "_1", x = method) ~ 1,
-                                 grepl(pattern = "_2", x = method) ~ 2,
-                                 TRUE ~ NA_real_),
-               method = case_when(grepl("ise", method) ~ "ISE",
-                                  grepl("mb", method) ~  "MB",
-                                  grepl("uv", method)~ "UV"),
-               conc = as.numeric(conc)) %>%
+        tidyr::pivot_longer(
+          cols = -sampleCode,
+          names_to = "method",
+          values_to = "conc"
+        ) %>%
+        dplyr::mutate(
+          depth = case_when(
+            method == "conc_ise" ~ 1,
+            grepl(pattern = "_1", x = method) ~ 1,
+            grepl(pattern = "_2", x = method) ~ 2,
+            TRUE ~ NA_real_
+          ),
+          method = case_when(
+            grepl("ise", method) ~ "ISE",
+            grepl("mb", method) ~  "MB",
+            grepl("uv", method) ~ "UV"
+          ),
+          conc = as.numeric(conc)
+        ) %>%
         select(sampleCode, method, depth, conc) %>%
         dplyr::left_join(select(data[['si']], sampleCode, latitude, longitude), by = "sampleCode") %>%
-        sf::st_as_sf(coords = c("longitude", "latitude"), crs = "WRS84")
+        sf::st_as_sf(coords = c("longitude", "latitude"),
+                     crs = "WGS84")
     }
 
     # DPAB data transformation
     if ("dpab" %in% excelSheets) {
       print("DPAB")
+
+      data[['dpab_loq']] <- data[['si']] %>%
+        sf::st_join(data[['dpab']], by = 'sampleCode') %>%
+        tidyr::pivot_longer(cols = ends_with("LOQ"),
+                            names_to = "compound",
+                            values_to = "loq",
+        ) %>%
+        select(compound,
+               loq) %>%
+        mutate(compound = stringr::str_remove(compound, "NgPgLOQ")) %>%
+        sf::st_drop_geometry() %>%
+        distinct() %>%
+        filter(!is.na(loq))
+
       data[['dpab']] <- data[['si']] %>%
         sf::st_join(data[['dpab']], by = 'sampleCode') %>%
         tidyr::pivot_longer(cols = ends_with("NgPg"),
@@ -148,6 +180,18 @@ ampDataLoad <-
           moisturePercent = MoisturePercent,
           dryConc
         )
+    }
+
+    # OM data transformation
+    if ("om" %in% excelSheets) {
+      print("Organic Matter")
+
+      data[['om']] <- data[['si']] %>%
+        sf::st_join(data[['om']], by = 'sampleCode') %>%
+        select(-organicMatterPercentDFO) %>%
+        select(sampleCode = sampleCode.x,
+               percent = organicMatterPercentRPC) %>%
+        mutate(percent = as.numeric(percent))
     }
 
     data <- data[order(names(data))]

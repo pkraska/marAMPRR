@@ -23,6 +23,7 @@ ampKrige <-
     plot_grid <- df %>%
       sf::st_bbox() %>%
       sf::st_as_sfc() %>%
+      sf::st_set_crs(value = "WGS84") %>%
       sf::st_transform(crs) %>%
       sf::st_make_grid(cellsize, what = 'centers') %>%
       sf::st_as_sf() %>%

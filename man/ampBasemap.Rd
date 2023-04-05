@@ -9,7 +9,7 @@ ampBasemap(
   coastline,
   aoi_buffer = 1000,
   facility = NA,
-  analysis = FALSE,
+  analysis = NA,
   cageExtents = FALSE,
   leases = FALSE,
   sampleLocations = FALSE

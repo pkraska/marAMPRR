@@ -19,7 +19,7 @@ ampBasemap <-
             coastline,
             aoi_buffer = 1000,
             facility = NA,
-            analysis = FALSE,
+            analysis = NA,
             cageExtents = FALSE,
             leases = FALSE,
             sampleLocations = FALSE) {
@@ -68,8 +68,13 @@ ampBasemap <-
       baseMap <- baseMap +
         ggplot2::geom_sf(data = data[['si']],
                          size = ifelse(aoi_buffer > 1000, 1000/aoi_buffer, 0.8),
-                         col = 'red',
-                         fill = NA)
+                         col = 'black',
+                         fill = "white", shape = 21)
+    }
+
+    if (!is.na(analysis)) {
+      baseMap <- baseMap +
+        sf::geom_sf(data = analysis, col = analysisMeasure)
     }
 
     final_basemap <- baseMap +
