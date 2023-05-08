@@ -13,9 +13,7 @@ ampKrige(dataframe, z, cellsize, crs = 32620)
 
 \item{cellsize}{grid cell size in meters}
 
-\item{x}{longitude}
-
-\item{y}{latitude}
+\item{crs}{ending CRS, should keep as 32620 unless you have reasons not to}
 }
 \value{
 dataframe of kriged valuess

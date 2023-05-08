@@ -21,9 +21,10 @@ ampKrigePlot <-
            contour_bins = 10,
            crs = 32620,
            colourTheme = "plasma",
-           raster = TRUE) {
+           raster = TRUE,
+           title = NULL) {
     UK <- krigedData
-
+UK <- om_krige
     krige_data <-
       cbind(UK$krige_output@data, UK$krige_output@coords) %>%
       `colnames<-`(c('Z', 'var', 'stdev', 'X', 'Y')) %>%
@@ -62,6 +63,6 @@ ampKrigePlot <-
         ggplot2::coord_sf(expand = FALSE) +
         ggplot2::scale_fill_viridis_c(option = colourTheme) +
         ggplot2::scale_colour_viridis_c(option = colourTheme) +
-        ggplot2::labs(x = "", y = "", title = "TEST")
+        ggplot2::labs(x = "", y = "", title = title )
     }
   }

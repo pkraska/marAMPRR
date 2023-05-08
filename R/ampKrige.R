@@ -1,10 +1,9 @@
 #' AMP parameter Universal Kriging
 #'
 #' @param dataframe sf dataframe of data with coordinates variables included
-#' @param x longitude
-#' @param y latitude
 #' @param z parameter column name to be interpolated
 #' @param cellsize grid cell size in meters
+#' @param crs ending CRS, should keep as 32620 unless you have reasons not to
 #'
 #' @import dplyr
 #' @import sf
@@ -20,22 +19,26 @@ ampKrige <-
            z,
            cellsize,
            crs = 32620) {
-    plot_grid <- df %>%
+    plot_grid <- dataframe %>%
       sf::st_bbox() %>%
       sf::st_as_sfc() %>%
-      sf::st_set_crs(value = "WGS84") %>%
       sf::st_transform(crs) %>%
       sf::st_make_grid(cellsize, what = 'centers') %>%
       sf::st_as_sf() %>%
       cbind(., sf::st_coordinates(.))
 
+    print(plot_grid)
+
     sp_grid <- as(object = plot_grid, Class = "Spatial")
     sp::gridded(sp_grid) <- TRUE
     sp_grid <- as(sp_grid, "SpatialPixels")
 
+
+  print(sp_grid)
+
     try(UK <-
           automap::autoKrige(formula = eval(parse(text = z)) ~ coords.x1 + coords.x2,
-                             as(df, "Spatial"),
+                             as(dataframe, "Spatial"),
                              sp_grid))
 
     plot(UK)

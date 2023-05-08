@@ -10,7 +10,8 @@ ampKrigePlot(
   contour_bins = 10,
   crs = 32620,
   colourTheme = "plasma",
-  raster = TRUE
+  raster = TRUE,
+  title = NULL
 )
 }
 \arguments{
